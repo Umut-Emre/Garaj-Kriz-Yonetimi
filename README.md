@@ -5,7 +5,7 @@ GARAJ Kriz Yönetim Merkezi
 > Afet ve acil durum senaryolarında lojistik darboğazları minimize eden, gerçek zamanlı envanter yönetimi ve saha koordinasyonu sağlayan uçtan uca takip sistemi.
 
 ## 📌 Proje Hakkında
-Bu proje, [çözülen sorun] amacıyla geliştirilmiştir. Özellikle [teknik bir detay veya zorluk] üzerine odaklanarak, [X metodolojisi] kullanılarak inşa edilmiştir.
+Bu proje, afet sonrasında ihtiyaç noktalarına ulaşamayan yardımları yönetme amacıyla geliştirilmiştir. Özellikle kullanılacak yol, stok ve ihtiyaç durumları üzerine odaklanarak, matematiksel algoritmalar kullanılarak inşa edilmiştir.
 
 ### 🚀 Temel Özellikler
 * **Gerçek Zamanlı Takip:** [Özelliğin açıklaması]
