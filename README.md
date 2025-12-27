@@ -1,6 +1,8 @@
-# Proje Adı (Örn: Lojistik Takip Sistemi)
+GARAJ Kriz Yönetim Merkezi
 
-> Projenin ne yaptığını anlatan tek cümlelik etkileyici bir özet.
+# Afet ve Acil Durum Lojistik Takip Sistemi
+
+> Afet ve acil durum senaryolarında lojistik darboğazları minimize eden, gerçek zamanlı envanter yönetimi ve saha koordinasyonu sağlayan uçtan uca takip sistemi.
 
 ## 📌 Proje Hakkında
 Bu proje, [çözülen sorun] amacıyla geliştirilmiştir. Özellikle [teknik bir detay veya zorluk] üzerine odaklanarak, [X metodolojisi] kullanılarak inşa edilmiştir.
