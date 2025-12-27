@@ -114,5 +114,13 @@ namespace DisasterLogistics.Core.Models
             MarkAsUpdated();
             return true;
         }
+
+        /// <summary>
+        /// Resets the fulfilled quantity to zero for fresh matching.
+        /// </summary>
+        public void ResetFulfillment()
+        {
+            QuantityFulfilled = 0;
+        }
     }
 }

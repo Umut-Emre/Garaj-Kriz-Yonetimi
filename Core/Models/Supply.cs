@@ -182,5 +182,13 @@ namespace DisasterLogistics.Core.Models
             MarkAsUpdated();
             return true;
         }
+
+        /// <summary>
+        /// Resets the reservation quantity to zero for fresh matching.
+        /// </summary>
+        public void ResetReservation()
+        {
+            QuantityReserved = 0;
+        }
     }
 }
