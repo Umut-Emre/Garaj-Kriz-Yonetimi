@@ -26,3 +26,10 @@ Bir mühendisin projesini başkası da kolayca ayağa kaldırabilmelidir.
 1. **Depoyu klonlayın:**
    ```bash
    git clone [https://github.com/kullaniciadi/proje-adi.git](https://github.com/kullaniciadi/proje-adi.git)
+
+
+GARAJ KAPLANLARI
+-Umut Emre YILDIRIM
+-Emre FINDIK
+-Alper Murat OCAK
+-Hasan BAKIR
