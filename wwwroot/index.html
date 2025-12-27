@@ -268,6 +268,23 @@
             background: #16a34a;
             transform: scale(1.05);
         }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
     </style>
 </head>
 
@@ -368,19 +385,22 @@
             <div class="col-span-2 space-y-2 overflow-hidden flex flex-col">
                 <div class="card rounded-lg overflow-hidden flex-1">
                     <div
-                        class="bg-gradient-to-r from-red-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border">
-                        <h2 class="font-semibold text-crisis-accent text-xs">🚨 SAHA İHTİYAÇ BİLDİRİMLERİ</h2>
+                        class="bg-gradient-to-r from-red-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border flex justify-between items-center">
+                        <h2 class="font-semibold text-crisis-accent text-xs">🚨 SAHA İHTİYAÇLARI</h2>
+                        <span id="criticalCountBadge"
+                            class="bg-red-600 text-white text-[10px] px-1.5 rounded-full font-bold">0</span>
                     </div>
-                    <div id="criticalList" class="p-1.5 space-y-1 overflow-y-auto" style="max-height: 150px;">
+                    <div id="criticalList" class="p-1.5 space-y-1.5 overflow-y-auto custom-scrollbar" style="flex: 1;">
                         <div class="text-gray-500 text-xs">Yükleniyor...</div>
                     </div>
                 </div>
                 <div class="card rounded-lg overflow-hidden flex-1">
                     <div
                         class="bg-gradient-to-r from-blue-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border">
-                        <h2 class="font-semibold text-crisis-blue text-xs">📦 LOJİSTİK SEVKİYAT MERKEZLERİ</h2>
+                        <h2 class="font-semibold text-crisis-blue text-xs">📦 LOJİSTİK MERKEZLER</h2>
                     </div>
-                    <div id="suppliesList" class="p-1.5 space-y-1 overflow-y-auto" style="max-height: 250px;">
+                    <div id="suppliesList" class="p-1.5 space-y-1.5 overflow-y-auto custom-scrollbar"
+                        style="flex: 1.5;">
                         <div class="text-gray-500 text-xs">Yükleniyor...</div>
                     </div>
                 </div>
@@ -533,15 +553,16 @@
 
             // Create empty heatmap layer
             heatmapLayer = L.heatLayer([], {
-                radius: 35,
-                blur: 20,
+                radius: 40,
+                blur: 25,
                 maxZoom: 15,
                 gradient: {
-                    0.2: '#ffe066',
-                    0.4: '#ffa500',
-                    0.6: '#ff6b35',
-                    0.8: '#ff4444',
-                    1.0: '#cc0000'
+                    0.2: '#06b6d4', // Cyan (low)
+                    0.4: '#10b981', // Emerald
+                    0.6: '#fbbf24', // Amber
+                    0.8: '#f97316', // Orange
+                    0.9: '#ef4444', // Red
+                    1.0: '#f43f5e'  // Rose (hottest)
                 }
             });
 
@@ -663,8 +684,10 @@
                     router: L.Routing.osrmv1({
                         serviceUrl: 'https://router.project-osrm.org/route/v1'
                     }),
+                    // HIDE blue waypoint markers
+                    createMarker: () => null,
                     lineOptions: {
-                        styles: [{ opacity: 0, weight: 0 }], // Hide LRM's default line
+                        styles: [{ opacity: 0, weight: 0 }],
                         extendToWaypoints: false,
                         missingRouteTolerance: 0
                     },
@@ -680,8 +703,6 @@
 
                 routingControl.on('routesfound', (e) => {
                     const coords = e.routes[0].coordinates;
-
-                    // Create our own polyline from the route coordinates
                     const routeLine = L.polyline(coords, {
                         color: color,
                         weight: 5,
@@ -689,12 +710,12 @@
                     }).addTo(operationalLayer);
                     routeLines.push(routeLine);
 
-                    animateTruck(coords, 3500);
+                    animateTruck(coords, 3000);
                     resolve(true);
                 });
 
                 routingControl.on('routingerror', () => resolve(false));
-                setTimeout(() => resolve(false), 12000);
+                setTimeout(() => resolve(false), 8000); // Fail-safe
             });
         }
 
@@ -703,7 +724,6 @@
             if (!routes || routes.length === 0) return;
 
             currentRoutes = routes;
-
             const routesWithSupply = routes.filter(r => r.fulfillmentStatus !== 'NoSupply');
             const noSupplyRoutes = routes.filter(r => r.fulfillmentStatus === 'NoSupply');
 
@@ -724,9 +744,10 @@
 
             document.getElementById('activeRoutes').textContent = routesWithSupply.length;
 
+            // DRAW: Staggered parallel drawing to preserve road accuracy without lagging
             for (let i = 0; i < routesWithSupply.length; i++) {
-                await createOSRMRoute(routesWithSupply[i]);
-                if (i < routesWithSupply.length - 1) await delay(300);
+                createOSRMRoute(routesWithSupply[i]);
+                await delay(200); // 200ms stagger for better visual and stability
             }
 
             await fetchNeeds();
@@ -738,6 +759,43 @@
                 const res = await fetch(`${API_BASE}/api/needs`);
                 const data = await res.json();
                 currentNeeds = data;
+
+                // Render Left List
+                const listContainer = document.getElementById('criticalList');
+                document.getElementById('criticalCountBadge').textContent = data.length;
+
+                if (data.length === 0) {
+                    listContainer.innerHTML = '<div class="text-gray-500 text-xs text-center p-4">Bildirim yok</div>';
+                } else {
+                    listContainer.innerHTML = data.map(need => {
+                        const cat = categoryColors[need.category] || { bg: '#374151', text: need.category };
+                        const isFulfilled = matchedNeedIds.has(need.id);
+                        const isPartial = partialNeedIds.has(need.id);
+
+                        let borderColor = 'border-crisis-border';
+                        let bgColor = 'bg-gray-800/30';
+                        if (isFulfilled) { borderColor = 'border-green-800'; bgColor = 'bg-green-900/10'; }
+                        else if (isPartial) { borderColor = 'border-yellow-800'; bgColor = 'bg-yellow-900/10'; }
+                        else if (noSupplyNeedIds.has(need.id)) { borderColor = 'border-red-800'; bgColor = 'bg-red-900/20'; }
+
+                        return `
+                        <div class="${bgColor} border ${borderColor} rounded p-1.5 transition hover:bg-gray-800/50">
+                            <div class="flex justify-between items-start mb-1">
+                                <div class="font-bold text-[11px] text-gray-200 truncate pr-1" title="${need.title}">${need.title}</div>
+                                <span class="text-[9px] font-mono text-gray-500">#${need.id.substring(0, 4)}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="category-badge" style="background:${cat.bg};color:white;">${cat.text}</span>
+                                <span class="text-[10px] text-gray-400">📍 ${need.address.split(',')[0]}</span>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <div class="text-[10px] text-crisis-accent font-semibold">${need.quantityRequired} adet</div>
+                                <div class="text-[9px] text-gray-500 italic">${isFulfilled ? 'Tamamlandı' : (isPartial ? 'Kısmi Sevk' : 'Bekliyor')}</div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                }
 
                 // Clear existing markers from operational layer
                 needMarkers.forEach(m => {
@@ -807,15 +865,18 @@
 
                     // AI Prediction display
                     let aiPredictionHtml = '';
-                    if (s.aiPrediction && s.allocatableQuantity > 0) {
+                    if (s.aiPrediction) {
                         const minutes = s.aiPrediction.minutesToDepletion;
                         const isCritical = s.aiPrediction.isCritical;
+                        const isDepleted = s.allocatableQuantity === 0;
 
-                        if (isCritical) {
+                        if (isDepleted) {
+                            aiPredictionHtml = `<div class="text-[10px] text-red-500 font-bold mt-1">🤖 AI: STOK BİTTİ, ACİL TEDARİK LAZIM!</div>`;
+                        } else if (isCritical) {
                             aiWarningCount++;
-                            aiPredictionHtml = `<div class="text-xs pulse-ai font-bold mt-1">🤖 AI: ${minutes} dk içinde tükenecek!</div>`;
+                            aiPredictionHtml = `<div class="text-[10px] pulse-ai font-bold mt-1">🤖 AI: ${minutes} dk içinde tükenecek!</div>`;
                         } else if (minutes < 120) {
-                            aiPredictionHtml = `<div class="text-xs text-pink-400 mt-1">🤖 AI: ~${minutes} dk tükenme tahmini</div>`;
+                            aiPredictionHtml = `<div class="text-[10px] text-pink-400 mt-1">🤖 AI: ~${minutes} dk tükenme tahmini</div>`;
                         }
                     }
 
@@ -843,8 +904,12 @@
                         const cat = categoryColors[supply.category] || { bg: '#6b7280', text: supply.category };
 
                         let aiPopupInfo = '';
-                        if (supply.aiPrediction && supply.allocatableQuantity > 0) {
-                            aiPopupInfo = `<div style="color:#f472b6;font-size:10px;margin-top:4px;">🤖 AI: ${supply.aiPrediction.minutesToDepletion} dk içinde tükenme tahmini</div>`;
+                        if (supply.aiPrediction) {
+                            if (supply.allocatableQuantity === 0) {
+                                aiPopupInfo = `<div style="color:#ef4444;font-size:10px;margin-top:4px;font-weight:bold;">🤖 AI: STOK BİTTİ, ACİL TEDARİK LAZIM!</div>`;
+                            } else {
+                                aiPopupInfo = `<div style="color:#f472b6;font-size:10px;margin-top:4px;">🤖 AI: ${supply.aiPrediction.minutesToDepletion} dk içinde tükenme tahmini</div>`;
+                            }
                         }
 
                         const marker = L.marker([supply.latitude, supply.longitude], { icon: createSupplyIcon(isDepleted) })
@@ -905,15 +970,25 @@
             try {
                 const res = await fetch(`${API_BASE}/api/logs`);
                 const data = await res.json();
-                document.getElementById('logTerminal').innerHTML = data.slice(0, 50).map(log => {
+
+                // Cleaner log display with better formatting
+                document.getElementById('logTerminal').innerHTML = data.slice(0, 30).map(log => {
                     const time = new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour12: false });
                     let color = 'text-gray-400';
-                    if (log.type === 'success') color = 'text-green-400';
-                    else if (log.type === 'error') color = 'text-red-400';
-                    else if (log.type === 'warning') color = 'text-yellow-400';
-                    else if (log.type === 'ai') color = 'text-pink-400';
+                    let prefix = '•';
 
-                    return `<div class="terminal-line ${color}">[${time}] ${log.message}</div>`;
+                    if (log.type === 'success') { color = 'text-green-400'; prefix = '✓'; }
+                    else if (log.type === 'error') { color = 'text-red-400'; prefix = '✗'; }
+                    else if (log.type === 'warning') { color = 'text-yellow-400'; prefix = '⚠'; }
+                    else if (log.type === 'ai') { color = 'text-pink-400'; prefix = '🤖'; }
+                    else if (log.type === 'info') { color = 'text-cyan-400'; prefix = 'ℹ'; }
+
+                    // Skip separator lines for cleaner look
+                    if (log.message.includes('━━━')) {
+                        return `<div class="terminal-line text-gray-600 text-xs py-0.5">────────────────────────</div>`;
+                    }
+
+                    return `<div class="terminal-line ${color}"><span class="text-gray-500 text-xs">[${time}]</span> ${prefix} ${log.message}</div>`;
                 }).join('');
             } catch (err) { console.error(err); }
         }

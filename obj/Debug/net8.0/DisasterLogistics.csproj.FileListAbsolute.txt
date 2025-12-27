@@ -32,5 +32,4 @@ C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\bin\Debug\net8.0\Swashbuckle.AspNe
 C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0\DisasterLogistics.csproj.AssemblyReference.cache
 C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0\DisasterLogistics.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0\Disaster.4A6D21C0.Up2Date
-C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\bin\Debug\net8.0\Newtonsoft.Json.dll
-C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\bin\Debug\net8.0\System.Net.WebSockets.WebSocketProtocol.dll
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0\DisasterLogistics.sourcelink.json

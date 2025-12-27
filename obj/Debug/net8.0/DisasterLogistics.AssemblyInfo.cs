@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DisasterLogistics")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8fc5658d16d04db1d6c6d31bf6ff11d308ec6ed")]
 [assembly: System.Reflection.AssemblyProductAttribute("DisasterLogistics")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DisasterLogistics")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
