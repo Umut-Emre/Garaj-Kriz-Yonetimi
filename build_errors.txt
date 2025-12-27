@@ -1,0 +1,27 @@
+﻿  Geri yüklenecek projeler belirleniyor...
+  Geri yükleme için tüm projeler güncel.
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(3,22): error CS0234: 'Media' tür veya ad alanı adı 'System.Windows' ad alanında yok (bir derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(4,22): error CS0234: 'Threading' tür veya ad alanı adı 'System.Windows' ad alanında yok (bir derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\App.xaml.cs(5,32): error CS0246: 'Application' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(11,39): error CS0246: 'Window' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(17,26): error CS0246: 'DispatcherTimer' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(251,57): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(257,61): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(297,59): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+
+Oluşturma BAŞARISIZ OLDU.
+
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(3,22): error CS0234: 'Media' tür veya ad alanı adı 'System.Windows' ad alanında yok (bir derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(4,22): error CS0234: 'Threading' tür veya ad alanı adı 'System.Windows' ad alanında yok (bir derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\App.xaml.cs(5,32): error CS0246: 'Application' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(11,39): error CS0246: 'Window' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(17,26): error CS0246: 'DispatcherTimer' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(251,57): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(257,61): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\Dashboard\MainWindow.xaml.cs(297,59): error CS0246: 'RoutedEventArgs' türü veya ad alanı adı bulunamadı (bir using yönergeniz veya derleme başvurunuz mu eksik?) [C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\DisasterLogistics.csproj]
+    0 Uyarı
+    8 Hata
+
+Geçen Süre 00:00:00.92
+
+İş yükü güncelleştirmeleri var. Daha fazla bilgi için `dotnet workload list` çalıştırın.

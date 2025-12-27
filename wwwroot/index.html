@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 AFAD Kriz Yönetim Merkezi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'crisis-dark': '#0a0f1a',
+                        'crisis-panel': '#111827',
+                        'crisis-border': '#1f2937',
+                        'crisis-accent': '#ef4444',
+                        'crisis-green': '#22c55e',
+                        'crisis-blue': '#3b82f6',
+                        'crisis-yellow': '#eab308',
+                        'crisis-cyan': '#06b6d4',
+                        'crisis-purple': '#a855f7',
+                        'crisis-ai': '#f472b6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #1a1f2e 100%);
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .glow-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .glow-green {
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .glow-blue {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .glow-ai {
+            box-shadow: 0 0 20px rgba(244, 114, 182, 0.4);
+        }
+
+        .card {
+            background: linear-gradient(145deg, #111827 0%, #0d1117 100%);
+            border: 1px solid #1f2937;
+        }
+
+        .terminal {
+            background: #0d1117;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+        }
+
+        .terminal-line {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .pulse-red {
+            animation: pulseRed 2s infinite;
+        }
+
+        @keyframes pulseRed {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse-ai {
+            animation: pulseAI 1.5s infinite;
+        }
+
+        @keyframes pulseAI {
+
+            0%,
+            100% {
+                opacity: 1;
+                color: #f472b6;
+            }
+
+            50% {
+                opacity: 0.6;
+                color: #ef4444;
+            }
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+
+        .status-badge {
+            font-size: 8px;
+            padding: 1px 5px;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .category-badge {
+            font-size: 8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: #1f2937;
+            color: #fff;
+            border-radius: 8px;
+        }
+
+        .leaflet-popup-tip {
+            background: #1f2937;
+        }
+
+        .leaflet-popup-content {
+            margin: 10px 12px;
+        }
+
+        .leaflet-routing-container {
+            display: none !important;
+        }
+
+        .leaflet-control-layers {
+            background: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            border-radius: 8px !important;
+        }
+
+        .leaflet-control-layers-toggle {
+            background-color: #1f2937 !important;
+        }
+
+        .leaflet-control-layers-expanded {
+            padding: 8px 12px !important;
+            color: #e5e7eb !important;
+        }
+
+        .leaflet-control-layers-selector {
+            margin-right: 6px !important;
+        }
+
+        .leaflet-control-layers-overlays label {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 12px;
+        }
+
+        .truck-marker {
+            font-size: 22px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes markerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .marker-pulse {
+            animation: markerPulse 1s ease-in-out infinite;
+        }
+
+        .progress-shimmer {
+            background: linear-gradient(90deg, #06b6d4 0%, #22d3ee 50%, #06b6d4 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .chaos-glow {
+            animation: chaosGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes chaosGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 5px rgba(168, 85, 247, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+
+        .resupply-btn {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: #22c55e;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .resupply-btn:hover {
+            background: #16a34a;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-gray-100">
+    <!-- Header -->
+    <header class="bg-crisis-panel border-b border-crisis-border px-4 py-2">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-2.5 h-2.5 rounded-full bg-crisis-accent pulse-red"></div>
+                <div>
+                    <h1 class="text-base font-bold tracking-wide">AFAD KRİZ YÖNETİM MERKEZİ</h1>
+                    <p class="text-gray-500 text-xs">🤖 AI Tahmin Motoru • Çoklu Kaynak Eşleştirme</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="simulateChaos()" id="chaosBtn"
+                    class="chaos-glow bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 px-3 py-1.5 rounded text-xs font-bold transition">
+                    🌪️ KAOS SİMÜLASYONU
+                </button>
+                <a href="/swagger" target="_blank" class="text-xs text-crisis-cyan hover:text-cyan-400">📘 API</a>
+                <div class="text-right">
+                    <div class="text-xs text-gray-500">SAAT</div>
+                    <div id="systemTime" class="mono text-crisis-cyan font-semibold text-xs">--:--:--</div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-crisis-green"></div>
+                    <span class="text-xs text-gray-400">AKTİF</span>
+                </div>
+                <button onclick="refreshAll()"
+                    class="bg-crisis-blue hover:bg-blue-600 px-2.5 py-1.5 rounded text-xs font-semibold transition">🔄</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Progress Bar -->
+    <div id="matchingProgress" class="hidden">
+        <div class="bg-crisis-dark px-4 py-1.5 border-b border-crisis-border">
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-crisis-cyan font-semibold">⚡ ROTA HESAPLANIYOR</span>
+                <div class="flex-1 bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                    <div id="progressBar" class="h-full progress-shimmer rounded-full" style="width: 0%"></div>
+                </div>
+                <span id="progressText" class="text-xs text-gray-400 mono">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <main class="p-3">
+        <!-- Stats Row -->
+        <div class="grid grid-cols-5 gap-2 mb-3">
+            <div class="card rounded-lg p-2">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-gray-400 text-xs font-semibold">Karşılanan</span>
+                    <span>📊</span>
+                </div>
+                <div class="flex items-end gap-0.5">
+                    <span id="needsMetPercent" class="text-xl font-bold text-crisis-green">--</span>
+                    <span class="text-xs text-crisis-green">%</span>
+                </div>
+                <div class="mt-1 bg-gray-800 rounded-full h-1 overflow-hidden">
+                    <div id="needsMetBar" class="h-full bg-gradient-to-r from-green-600 to-green-400 progress-bar"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="card rounded-lg p-2 glow-red">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-gray-400 text-xs font-semibold">Kritik Aciliyet</span>
+                    <span>🚨</span>
+                </div>
+                <span id="criticalCount" class="text-xl font-bold text-crisis-accent">--</span>
+            </div>
+            <div class="card rounded-lg p-2 glow-blue">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-gray-400 text-xs font-semibold">Aktif Rotalar</span>
+                    <span>🛣️</span>
+                </div>
+                <span id="activeRoutes" class="text-xl font-bold text-crisis-blue">--</span>
+            </div>
+            <div class="card rounded-lg p-2">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-gray-400 text-xs font-semibold">Çoklu Kaynak</span>
+                    <span>🔗</span>
+                </div>
+                <span id="multiSourceCount" class="text-xl font-bold text-crisis-purple">--</span>
+            </div>
+            <div class="card rounded-lg p-2 glow-ai">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-gray-400 text-xs font-semibold">AI Uyarı</span>
+                    <span>🤖</span>
+                </div>
+                <span id="aiWarningCount" class="text-xl font-bold text-crisis-ai">0</span>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-12 gap-3" style="height: calc(100vh - 160px);">
+            <!-- Left Column -->
+            <div class="col-span-2 space-y-2 overflow-hidden flex flex-col">
+                <div class="card rounded-lg overflow-hidden flex-1">
+                    <div
+                        class="bg-gradient-to-r from-red-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border">
+                        <h2 class="font-semibold text-crisis-accent text-xs">🚨 SAHA İHTİYAÇ BİLDİRİMLERİ</h2>
+                    </div>
+                    <div id="criticalList" class="p-1.5 space-y-1 overflow-y-auto" style="max-height: 150px;">
+                        <div class="text-gray-500 text-xs">Yükleniyor...</div>
+                    </div>
+                </div>
+                <div class="card rounded-lg overflow-hidden flex-1">
+                    <div
+                        class="bg-gradient-to-r from-blue-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border">
+                        <h2 class="font-semibold text-crisis-blue text-xs">📦 LOJİSTİK SEVKİYAT MERKEZLERİ</h2>
+                    </div>
+                    <div id="suppliesList" class="p-1.5 space-y-1 overflow-y-auto" style="max-height: 250px;">
+                        <div class="text-gray-500 text-xs">Yükleniyor...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Map -->
+            <div class="col-span-7 card rounded-lg overflow-hidden">
+                <div
+                    class="bg-gradient-to-r from-cyan-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border flex items-center justify-between">
+                    <h2 class="font-semibold text-crisis-cyan text-xs">🗺️ AFAD LOJİSTİK HARİTASI</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="flex items-center gap-1 text-xs"><span
+                                class="w-3 h-1 bg-green-500 rounded"></span>Tam</span>
+                        <span class="flex items-center gap-1 text-xs"><span
+                                class="w-3 h-1 bg-yellow-500 rounded"></span>Kısmi</span>
+                        <span class="flex items-center gap-1 text-xs"><span
+                                class="w-2 h-2 bg-red-500 rounded-full"></span>Stok Yok</span>
+                        <button onclick="runMatching()" id="matchBtn"
+                            class="bg-crisis-cyan hover:bg-cyan-500 text-black px-2 py-1 rounded text-xs font-bold transition ml-2">
+                            ⚡ EŞLEŞTİR
+                        </button>
+                    </div>
+                </div>
+                <div id="map" style="height: calc(100% - 36px);"></div>
+            </div>
+
+            <!-- Right Column: AI Decision Logs -->
+            <div class="col-span-3 card rounded-lg overflow-hidden">
+                <div
+                    class="bg-gradient-to-r from-pink-900/50 to-transparent px-2 py-1.5 border-b border-crisis-border flex items-center justify-between">
+                    <h2 class="font-semibold text-crisis-ai text-xs">🤖 AI KARAR DESTEK & KAYITLAR</h2>
+                    <span class="w-2 h-2 rounded-full bg-crisis-ai animate-pulse"></span>
+                </div>
+                <div id="logTerminal" class="terminal p-2 overflow-y-auto" style="height: calc(100% - 32px);">
+                    <div class="text-gray-600">[SİSTEM] AI Tahmin Motoru Başlatılıyor...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = '';
+        let map;
+        let layersControl = null;
+
+        // Layer groups
+        let operationalLayer = L.layerGroup();
+        let heatmapLayer = null;
+
+        // Individual markers/routes for operational layer
+        let needMarkers = [];
+        let supplyMarkers = [];
+        let routingControls = [];
+        let truckMarkers = [];
+        let routeLines = []; // Track route polylines for visibility toggle
+
+        // State tracking
+        let matchedNeedIds = new Set();
+        let noSupplyNeedIds = new Set();
+        let partialNeedIds = new Set();
+        let currentRoutes = [];
+        let currentNeeds = [];
+
+        // Category colors for badges
+        const categoryColors = {
+            'Medical': { bg: '#dc2626', text: 'Tıbbi Malzeme' },
+            'Water': { bg: '#2563eb', text: 'Su ve İçecek' },
+            'Food': { bg: '#16a34a', text: 'Gıda' },
+            'Shelter': { bg: '#9333ea', text: 'Barınma' },
+            'Equipment': { bg: '#ea580c', text: 'Ekipman' },
+            'Hygiene': { bg: '#0891b2', text: 'Hijyen' },
+            'Clothing': { bg: '#be185d', text: 'Giysi' },
+            'Fuel': { bg: '#854d0e', text: 'Yakıt' }
+        };
+
+        const truckIcon = L.divIcon({ className: 'truck-marker', html: '🚚', iconSize: [26, 26], iconAnchor: [13, 13] });
+
+        function getCategoryBadge(category) {
+            const cat = categoryColors[category] || { bg: '#6b7280', text: category };
+            return `<span class="category-badge" style="background:${cat.bg};color:white;">${cat.text}</span>`;
+        }
+
+        function createNeedIcon(status = 'pending') {
+            let color = '#ef4444';
+            let pulse = '';
+
+            if (status === 'full') {
+                color = '#22c55e';
+            } else if (status === 'partial') {
+                color = '#eab308';
+                pulse = 'marker-pulse';
+            } else if (status === 'noSupply') {
+                color = '#ef4444';
+                pulse = 'marker-pulse';
+            }
+
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4);" class="${pulse}"></div>`,
+                iconSize: [16, 16], iconAnchor: [8, 8]
+            });
+        }
+
+        function createSupplyIcon(isDepleted = false) {
+            const color = isDepleted ? '#6b7280' : '#3b82f6';
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 3px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>`,
+                iconSize: [16, 16], iconAnchor: [8, 8]
+            });
+        }
+
+        // Process needs data for heatmap - using quantity as intensity
+        function processHeatmapData(needs) {
+            const points = [];
+            const maxQuantity = Math.max(...needs.map(n => n.quantityRequired), 1);
+
+            needs.forEach(need => {
+                if (need.latitude && need.longitude) {
+                    // Normalize quantity to 0-1 range for intensity
+                    const intensity = need.quantityRequired / maxQuantity;
+                    // Higher intensity for unmet needs
+                    const modifier = need.remainingQuantity > 0 ? 1.5 : 0.5;
+                    points.push([need.latitude, need.longitude, Math.min(1, intensity * modifier)]);
+                }
+            });
+
+            return points;
+        }
+
+        // Update heatmap layer with current needs data
+        function updateHeatmap() {
+            if (currentNeeds.length > 0 && heatmapLayer) {
+                const heatData = processHeatmapData(currentNeeds);
+                // Use setLatLngs to update data without replacing layer reference
+                heatmapLayer.setLatLngs(heatData);
+            }
+        }
+
+        function initMap() {
+            map = L.map('map').setView([41.0082, 28.9784], 11);
+
+            // Dark base map
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap © CARTO', maxZoom: 19
+            }).addTo(map);
+
+            // Add operational layer to map by default
+            operationalLayer.addTo(map);
+
+            // Create empty heatmap layer
+            heatmapLayer = L.heatLayer([], {
+                radius: 35,
+                blur: 20,
+                maxZoom: 15,
+                gradient: {
+                    0.2: '#ffe066',
+                    0.4: '#ffa500',
+                    0.6: '#ff6b35',
+                    0.8: '#ff4444',
+                    1.0: '#cc0000'
+                }
+            });
+
+            // Layer control with overlays
+            const overlays = {
+                "🗺️ Operasyonel Görünüm": operationalLayer,
+                "🔥 Acil Yoğunluk Haritası": heatmapLayer
+            };
+
+            layersControl = L.control.layers(null, overlays, {
+                position: 'topright',
+                collapsed: false
+            }).addTo(map);
+        }
+
+        // Resupply warehouse
+        async function resupplyWarehouse(supplyId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/supplies/${supplyId}/resupply`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    await fetchSupplies();
+                    await fetchLogs();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function updateTime() {
+            document.getElementById('systemTime').textContent = new Date().toLocaleTimeString('tr-TR', { hour12: false });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function showProgress() { document.getElementById('matchingProgress').classList.remove('hidden'); }
+        function hideProgress() { document.getElementById('matchingProgress').classList.add('hidden'); }
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            document.getElementById('progressText').textContent = `${percent}%`;
+        }
+
+        function destroyAllRoutes() {
+            // Clear routing controls
+            for (const rc of routingControls) {
+                if (rc) {
+                    try {
+                        if (rc.getPlan) rc.getPlan().setWaypoints([]);
+                        map.removeControl(rc);
+                    } catch (e) { }
+                }
+            }
+            routingControls = [];
+
+            // Clear truck markers
+            for (const tm of truckMarkers) {
+                if (tm) {
+                    try { map.removeLayer(tm); } catch (e) { }
+                    try { operationalLayer.removeLayer(tm); } catch (e) { }
+                }
+            }
+            truckMarkers = [];
+
+            // Clear route lines from operationalLayer
+            for (const rl of routeLines) {
+                try { operationalLayer.removeLayer(rl); } catch (e) { }
+                try { map.removeLayer(rl); } catch (e) { }
+            }
+            routeLines = [];
+
+            matchedNeedIds.clear();
+            noSupplyNeedIds.clear();
+            partialNeedIds.clear();
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function animateTruck(routeCoords, duration = 3500) {
+            if (!routeCoords || routeCoords.length < 2) return;
+            const truck = L.marker(routeCoords[0], { icon: truckIcon }).addTo(operationalLayer);
+            truckMarkers.push(truck);
+            const startTime = Date.now();
+            const totalPoints = routeCoords.length;
+
+            function animate() {
+                const progress = Math.min((Date.now() - startTime) / duration, 1);
+                const pointIndex = Math.floor(progress * (totalPoints - 1));
+                const nextIndex = Math.min(pointIndex + 1, totalPoints - 1);
+                const localProgress = (progress * (totalPoints - 1)) % 1;
+                const currentPoint = routeCoords[pointIndex];
+                const nextPoint = routeCoords[nextIndex];
+                const lat = currentPoint.lat + (nextPoint.lat - currentPoint.lat) * localProgress;
+                const lng = currentPoint.lng + (nextPoint.lng - currentPoint.lng) * localProgress;
+                truck.setLatLng([lat, lng]);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    setTimeout(() => {
+                        try { operationalLayer.removeLayer(truck); } catch (e) { }
+                    }, 1000);
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function createOSRMRoute(route) {
+            return new Promise((resolve) => {
+                let color = '#22c55e';
+                if (route.fulfillmentStatus === 'Partial') {
+                    color = '#eab308';
+                }
+
+                const routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(route.supplyLat, route.supplyLng),
+                        L.latLng(route.needLat, route.needLng)
+                    ],
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    }),
+                    lineOptions: {
+                        styles: [{ opacity: 0, weight: 0 }], // Hide LRM's default line
+                        extendToWaypoints: false,
+                        missingRouteTolerance: 0
+                    },
+                    show: false,
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    routeWhileDragging: false,
+                    fitSelectedRoutes: false,
+                    showAlternatives: false
+                }).addTo(map);
+
+                routingControls.push(routingControl);
+
+                routingControl.on('routesfound', (e) => {
+                    const coords = e.routes[0].coordinates;
+
+                    // Create our own polyline from the route coordinates
+                    const routeLine = L.polyline(coords, {
+                        color: color,
+                        weight: 5,
+                        opacity: 0.9
+                    }).addTo(operationalLayer);
+                    routeLines.push(routeLine);
+
+                    animateTruck(coords, 3500);
+                    resolve(true);
+                });
+
+                routingControl.on('routingerror', () => resolve(false));
+                setTimeout(() => resolve(false), 12000);
+            });
+        }
+
+        async function drawRoutesWithDelay(routes) {
+            destroyAllRoutes();
+            if (!routes || routes.length === 0) return;
+
+            currentRoutes = routes;
+
+            const routesWithSupply = routes.filter(r => r.fulfillmentStatus !== 'NoSupply');
+            const noSupplyRoutes = routes.filter(r => r.fulfillmentStatus === 'NoSupply');
+
+            routesWithSupply.forEach(r => {
+                if (r.fulfillmentStatus === 'Full') matchedNeedIds.add(r.needId);
+                else if (r.fulfillmentStatus === 'Partial') partialNeedIds.add(r.needId);
+            });
+            noSupplyRoutes.forEach(r => noSupplyNeedIds.add(r.needId));
+
+            const allPoints = routes.flatMap(r => {
+                if (r.supplyLat && r.supplyLng) return [[r.supplyLat, r.supplyLng], [r.needLat, r.needLng]];
+                return [[r.needLat, r.needLng]];
+            });
+            if (allPoints.length > 0) {
+                const bounds = L.latLngBounds(allPoints);
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+            }
+
+            document.getElementById('activeRoutes').textContent = routesWithSupply.length;
+
+            for (let i = 0; i < routesWithSupply.length; i++) {
+                await createOSRMRoute(routesWithSupply[i]);
+                if (i < routesWithSupply.length - 1) await delay(300);
+            }
+
+            await fetchNeeds();
+            await fetchSupplies();
+        }
+
+        async function fetchNeeds() {
+            try {
+                const res = await fetch(`${API_BASE}/api/needs`);
+                const data = await res.json();
+                currentNeeds = data;
+
+                // Clear existing markers from operational layer
+                needMarkers.forEach(m => {
+                    try { operationalLayer.removeLayer(m); } catch (e) { }
+                    try { map.removeLayer(m); } catch (e) { }
+                });
+                needMarkers = [];
+
+                data.forEach(need => {
+                    if (need.latitude && need.longitude) {
+                        let status = 'pending';
+                        if (matchedNeedIds.has(need.id)) status = 'full';
+                        else if (partialNeedIds.has(need.id)) status = 'partial';
+                        else if (noSupplyNeedIds.has(need.id)) status = 'noSupply';
+
+                        const statusText = {
+                            'full': 'Tam Karşılandı',
+                            'partial': 'Kısmi Karşılandı',
+                            'noSupply': 'Stok Yok',
+                            'pending': 'Bekliyor'
+                        };
+
+                        const cat = categoryColors[need.category] || { bg: '#6b7280', text: need.category };
+
+                        const marker = L.marker([need.latitude, need.longitude], { icon: createNeedIcon(status) })
+                            .addTo(operationalLayer)
+                            .bindPopup(`
+                                <div style="min-width:160px;">
+                                    <div style="font-weight:bold;color:#ef4444;font-size:12px;">${need.title}</div>
+                                    <div style="margin:4px 0;"><span style="background:${cat.bg};color:white;padding:2px 6px;border-radius:4px;font-size:9px;">${cat.text}</span></div>
+                                    <div style="font-size:10px;color:#9ca3af;">📍 ${need.address}</div>
+                                    <div style="font-size:9px;color:#6b7280;font-family:monospace;">📐 ${need.latitude.toFixed(4)}, ${need.longitude.toFixed(4)}</div>
+                                    <hr style="border-color:#374151;margin:6px 0;">
+                                    <div style="font-size:11px;">
+                                        <strong>Durum:</strong> ${statusText[status]}<br>
+                                        <strong>İhtiyaç:</strong> ${need.quantityRequired} adet<br>
+                                        <strong>Kalan:</strong> ${need.remainingQuantity} adet
+                                    </div>
+                                </div>
+                            `);
+                        needMarkers.push(marker);
+                    }
+                });
+
+                // Update heatmap with new data
+                updateHeatmap();
+
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchSupplies() {
+            try {
+                const res = await fetch(`${API_BASE}/api/supplies`);
+                const data = await res.json();
+
+                // Clear existing markers from operational layer
+                supplyMarkers.forEach(m => {
+                    try { operationalLayer.removeLayer(m); } catch (e) { }
+                    try { map.removeLayer(m); } catch (e) { }
+                });
+                supplyMarkers = [];
+
+                let aiWarningCount = 0;
+
+                document.getElementById('suppliesList').innerHTML = data.map(s => {
+                    const cat = categoryColors[s.category] || { bg: '#6b7280', text: s.category };
+
+                    // AI Prediction display
+                    let aiPredictionHtml = '';
+                    if (s.aiPrediction && s.allocatableQuantity > 0) {
+                        const minutes = s.aiPrediction.minutesToDepletion;
+                        const isCritical = s.aiPrediction.isCritical;
+
+                        if (isCritical) {
+                            aiWarningCount++;
+                            aiPredictionHtml = `<div class="text-xs pulse-ai font-bold mt-1">🤖 AI: ${minutes} dk içinde tükenecek!</div>`;
+                        } else if (minutes < 120) {
+                            aiPredictionHtml = `<div class="text-xs text-pink-400 mt-1">🤖 AI: ~${minutes} dk tükenme tahmini</div>`;
+                        }
+                    }
+
+                    return `
+                    <div class="bg-gray-800/50 border border-gray-700 rounded p-1.5 text-xs">
+                        <div class="flex justify-between items-start">
+                            <div class="font-medium truncate flex-1">${s.name}</div>
+                            <button onclick="resupplyWarehouse('${s.id}')" class="resupply-btn text-white ml-1">➕ Tedarik Et</button>
+                        </div>
+                        <div class="my-1"><span class="category-badge" style="background:${cat.bg};color:white;">${cat.text}</span></div>
+                        <div class="text-gray-400 text-xs truncate">📍 ${s.address}</div>
+                        <div class="flex justify-between mt-1">
+                            <span class="${s.allocatableQuantity === 0 ? 'text-gray-500' : 'text-green-400'}">${s.allocatableQuantity} adet</span>
+                            <span class="status-badge ${s.status === 'Depleted' ? 'bg-gray-600' : 'bg-green-600'} text-white">${s.status === 'Depleted' ? 'TÜKENDİ' : 'MEVCUT'}</span>
+                        </div>
+                        ${aiPredictionHtml}
+                    </div>
+                `}).join('');
+
+                document.getElementById('aiWarningCount').textContent = aiWarningCount;
+
+                data.forEach(supply => {
+                    if (supply.latitude && supply.longitude) {
+                        const isDepleted = supply.allocatableQuantity === 0;
+                        const cat = categoryColors[supply.category] || { bg: '#6b7280', text: supply.category };
+
+                        let aiPopupInfo = '';
+                        if (supply.aiPrediction && supply.allocatableQuantity > 0) {
+                            aiPopupInfo = `<div style="color:#f472b6;font-size:10px;margin-top:4px;">🤖 AI: ${supply.aiPrediction.minutesToDepletion} dk içinde tükenme tahmini</div>`;
+                        }
+
+                        const marker = L.marker([supply.latitude, supply.longitude], { icon: createSupplyIcon(isDepleted) })
+                            .addTo(operationalLayer)
+                            .bindPopup(`
+                                <div style="min-width:150px;">
+                                    <div style="font-weight:bold;color:${isDepleted ? '#6b7280' : '#3b82f6'};font-size:12px;">${supply.name}</div>
+                                    <div style="margin:4px 0;"><span style="background:${cat.bg};color:white;padding:2px 6px;border-radius:4px;font-size:9px;">${cat.text}</span></div>
+                                    <div style="font-size:10px;color:#9ca3af;">📍 ${supply.address}</div>
+                                    <hr style="border-color:#374151;margin:6px 0;">
+                                    <div style="font-size:11px;">
+                                        <strong>Stok:</strong> ${supply.allocatableQuantity} adet
+                                        ${isDepleted ? '<div style="color:#ef4444;font-weight:bold;">⚠️ TÜKENDİ</div>' : ''}
+                                    </div>
+                                    ${aiPopupInfo}
+                                </div>
+                            `);
+                        supplyMarkers.push(marker);
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/dashboard-stats`);
+                const data = await res.json();
+                document.getElementById('needsMetPercent').textContent = Math.round(data.percentageNeedsMet);
+                document.getElementById('needsMetBar').style.width = `${data.percentageNeedsMet}%`;
+                document.getElementById('criticalCount').textContent = data.criticalNeeds.length;
+                renderCriticalItems(data.criticalNeeds);
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchEfficiency() {
+            try {
+                const res = await fetch(`${API_BASE}/api/efficiency`);
+                const data = await res.json();
+                document.getElementById('multiSourceCount').textContent = data.multiSourceMatches;
+            } catch (err) { console.error(err); }
+        }
+
+        function renderCriticalItems(items) {
+            const container = document.getElementById('criticalList');
+            if (items.length === 0) { container.innerHTML = '<div class="text-green-400 text-xs">✓ Kritik bildirim yok</div>'; return; }
+            container.innerHTML = items.slice(0, 5).map(item => {
+                const cat = categoryColors[item.category] || { bg: '#6b7280', text: item.category };
+                return `
+                <div class="bg-red-900/30 border border-red-800 rounded p-1.5 text-xs">
+                    <div class="font-semibold text-red-300 truncate">${item.title}</div>
+                    <div class="my-1"><span class="category-badge" style="background:${cat.bg};color:white;">${cat.text}</span></div>
+                    <div class="text-red-200">${item.quantityMissing} adet eksik</div>
+                </div>
+            `}).join('');
+        }
+
+        async function fetchLogs() {
+            try {
+                const res = await fetch(`${API_BASE}/api/logs`);
+                const data = await res.json();
+                document.getElementById('logTerminal').innerHTML = data.slice(0, 50).map(log => {
+                    const time = new Date(log.timestamp).toLocaleTimeString('tr-TR', { hour12: false });
+                    let color = 'text-gray-400';
+                    if (log.type === 'success') color = 'text-green-400';
+                    else if (log.type === 'error') color = 'text-red-400';
+                    else if (log.type === 'warning') color = 'text-yellow-400';
+                    else if (log.type === 'ai') color = 'text-pink-400';
+
+                    return `<div class="terminal-line ${color}">[${time}] ${log.message}</div>`;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function runMatching() {
+            const btn = document.getElementById('matchBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳';
+            showProgress();
+            destroyAllRoutes();
+
+            let progress = 0;
+            const progressInterval = setInterval(() => { progress = Math.min(progress + Math.random() * 8, 85); updateProgress(Math.round(progress)); }, 250);
+
+            try {
+                const res = await fetch(`${API_BASE}/api/match`, { method: 'POST' });
+                const data = await res.json();
+                clearInterval(progressInterval);
+
+                if (data.success && data.routes) {
+                    updateProgress(90);
+                    await drawRoutesWithDelay(data.routes);
+                }
+
+                updateProgress(100);
+                setTimeout(() => { hideProgress(); refreshAll(); }, 300);
+            } catch (err) { clearInterval(progressInterval); hideProgress(); console.error(err); }
+            finally { btn.disabled = false; btn.textContent = '⚡ EŞLEŞTİR'; }
+        }
+
+        async function simulateChaos() {
+            const btn = document.getElementById('chaosBtn');
+            btn.disabled = true;
+            btn.innerHTML = '🌪️';
+            showProgress();
+            destroyAllRoutes();
+
+            let progress = 0;
+            const progressInterval = setInterval(() => { progress = Math.min(progress + Math.random() * 6, 80); updateProgress(Math.round(progress)); }, 200);
+
+            try {
+                const res = await fetch(`${API_BASE}/api/simulate`, { method: 'POST' });
+                const data = await res.json();
+                clearInterval(progressInterval);
+
+                if (data.routes && data.routes.length > 0) {
+                    updateProgress(85);
+                    await delay(400);
+                    await drawRoutesWithDelay(data.routes);
+                }
+
+                updateProgress(100);
+                setTimeout(() => { hideProgress(); refreshAll(); }, 300);
+            } catch (err) { clearInterval(progressInterval); hideProgress(); console.error(err); }
+            finally { btn.disabled = false; btn.innerHTML = '🌪️ KAOS SİMÜLASYONU'; }
+        }
+
+        async function refreshAll() {
+            await Promise.all([fetchStats(), fetchNeeds(), fetchSupplies(), fetchLogs(), fetchEfficiency()]);
+        }
+
+        initMap();
+        refreshAll();
+        setInterval(refreshAll, 20000);
+    </script>
+</body>
+
+</html>

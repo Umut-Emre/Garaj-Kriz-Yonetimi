@@ -1,0 +1,4 @@
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0-windows\DisasterLogistics.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0-windows\DisasterLogistics.AssemblyInfoInputs.cache
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0-windows\DisasterLogistics.AssemblyInfo.cs
+C:\Users\UMUT\Desktop\Disaster_Logistic_Panel\obj\Debug\net8.0-windows\DisasterLogistics.csproj.CoreCompileInputs.cache
