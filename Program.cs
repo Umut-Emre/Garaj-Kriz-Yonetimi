@@ -458,64 +458,45 @@ app.MapPost("/api/simulate", () =>
     matchRoutes.Clear();
     aiAnalytics.Reset();
     
-    string[] addresses = { "Fatih Merkez, Fatih", "Beşiktaş Sahil, Beşiktaş", "Kadıköy Moda, Kadıköy", 
-                          "Üsküdar Çarşı, Üsküdar", "Bakırköy Merkez, Bakırköy", "Şişli Meydanı, Şişli", 
-                          "Maltepe Sahil, Maltepe", "Ataşehir Merkez, Ataşehir", "Pendik Merkez, Pendik",
-                          "Kartal Sahil, Kartal" };
+    // === OPTIMIZED SCENARIO: 5 NEEDS, 2 SUPPLIES ===
     
-    // === 3 FULL MATCH NEEDS (Medical - enough stock) ===
-    needs.Add(new Need("Acil İnsani Yardım #1", "Medical", 100, 
-        Location.FromCoordinates(40.97, 28.87, addresses[0]), PriorityLevel.Critical));
-    needs.Add(new Need("Tıbbi Müdahale Kiti #2", "Medical", 80, 
-        Location.FromCoordinates(40.99, 28.92, addresses[1]), PriorityLevel.Critical));
-    needs.Add(new Need("İlk Yardım Desteği #3", "Medical", 70, 
-        Location.FromCoordinates(41.01, 28.97, addresses[2]), PriorityLevel.High));
+    // 2 Medical Needs (Full Match)
+    needs.Add(new Need("Acil Tıbbi Yardım #1", "Medical", 120, 
+        Location.FromCoordinates(41.01, 28.94, "Fatih Merkez"), PriorityLevel.Critical));
+    needs.Add(new Need("Tıbbi Müdahale Kiti #2", "Medical", 60, 
+        Location.FromCoordinates(41.03, 28.98, "Şişli"), PriorityLevel.High));
     
-    // === 4 PARTIAL MATCH NEEDS (Water - limited stock) ===
-    needs.Add(new Need("Su Temini Talebi #4", "Water", 200, 
-        Location.FromCoordinates(41.03, 29.02, addresses[3]), PriorityLevel.High));
-    needs.Add(new Need("İçme Suyu İhtiyacı #5", "Water", 180, 
-        Location.FromCoordinates(41.05, 29.07, addresses[4]), PriorityLevel.Medium));
-    needs.Add(new Need("Temiz Su Desteği #6", "Water", 160, 
-        Location.FromCoordinates(41.07, 28.89, addresses[5]), PriorityLevel.Medium));
-    needs.Add(new Need("Acil Su Yardımı #7", "Water", 150, 
-        Location.FromCoordinates(41.09, 28.94, addresses[6]), PriorityLevel.Medium));
+    // 2 Water Needs (Partial Match)
+    needs.Add(new Need("Su Temini Talebi #3", "Water", 200, 
+        Location.FromCoordinates(40.99, 29.02, "Kadıköy"), PriorityLevel.High));
+    needs.Add(new Need("İçme Suyu İhtiyacı #4", "Water", 300, 
+        Location.FromCoordinates(41.00, 28.87, "Zeytinburnu"), PriorityLevel.Medium));
     
-    // === 3 NO SUPPLY NEEDS (Clothing, Fuel - zero stock) ===
-    needs.Add(new Need("Giysi Yardımı #8", "Clothing", 100, 
-        Location.FromCoordinates(41.02, 29.05, addresses[7]), PriorityLevel.High));
-    needs.Add(new Need("Battaniye Talebi #9", "Clothing", 150, 
-        Location.FromCoordinates(41.04, 28.86, addresses[8]), PriorityLevel.Medium));
-    needs.Add(new Need("Yakıt Desteği #10", "Fuel", 200, 
-        Location.FromCoordinates(41.06, 29.00, addresses[9]), PriorityLevel.Critical));
+    // 1 No Supply Need (Clothing - triggers warning)
+    needs.Add(new Need("Battaniye Talebi #5", "Clothing", 150, 
+        Location.FromCoordinates(41.04, 29.05, "Beşiktaş"), PriorityLevel.Medium));
     
-    // === WAREHOUSES ===
-    supplies.Add(new Supply("AFAD Tıbbi Malzeme Deposu", "Medical", 250, 
-        Location.FromCoordinates(41.00, 28.90, "AFAD İkitelli Lojistik Üssü, Başakşehir")));
-    supplies.Add(new Supply("AFAD Su Dağıtım Merkezi", "Water", 300, 
-        Location.FromCoordinates(41.04, 29.00, "AFAD Tuzla Lojistik Merkezi, Tuzla")));
-    supplies.Add(new Supply("AFAD Barınma Deposu", "Shelter", 500, 
-        Location.FromCoordinates(41.08, 29.04, "AFAD Hadımköy Deposu, Arnavutköy")));
+    // === 2 SUPPLIES ===
+    supplies.Add(new Supply("AFAD Ana Lojistik Üssü", "Medical", 300, 
+        Location.FromCoordinates(41.08, 28.82, "AFAD Başakşehir Deposu")));
+    supplies.Add(new Supply("AFAD Su Dağıtım Noktası", "Water", 250, 
+        Location.FromCoordinates(41.06, 29.01, "AFAD Beykoz Deposu")));
     
     AddLog($"📊 Simülasyon: {needs.Count} bildirim, {supplies.Count} merkez", "success");
-    AddLog($"   🟢 3 tam | 🟡 4 kısmi | 🔴 3 stok yok", "warning");
     
     matchRoutes.Clear();
     matchRoutes.AddRange(ExecuteMultiSourceMatching(needs, supplies));
     
-    // Generate AI analysis after simulation
-    AddLog($"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "info");
-    AddLog($"🤖 [AI ANALİZ] Simülasyon sonuçları değerlendiriliyor...", "ai");
-    
+    // Generate AI analysis
     var criticalCategories = needs.Where(n => !n.IsFulfilled && n.QuantityFulfilled == 0)
         .Select(n => n.Category).Distinct().ToList();
     
-    if (criticalCategories.Count > 0)
-    {
+    if (criticalCategories.Count > 0) {
         var catNames = string.Join(", ", criticalCategories.Select(c => GetCategoryDisplayName(c)));
-        AddLog($"🤖 [AI UYARI] {catNames} kategorilerinde stok yetersizliği tespit edildi!", "ai");
-        AddLog($"   ↳ Acil tedarik planlaması önerilir", "ai");
+        AddLog($"🤖 [AI UYARI] {catNames} stok yetersizliği!", "ai");
     }
+    
+    AddLog($"✅ {matchRoutes.Count} eşleştirme planlandı", "success");
     
     return Results.Ok(new
     {
@@ -532,8 +513,20 @@ app.MapPost("/api/match", () =>
     AddLog("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", "info");
     AddLog("🚀 Eşleştirme Motoru başlatılıyor...", "info");
     
+    // Reset fulfillment states for fresh matching
+    foreach (var need in needs)
+    {
+        need.ResetFulfillment();
+    }
+    foreach (var supply in supplies)
+    {
+        supply.ResetReservation();
+    }
+    
     matchRoutes.Clear();
     matchRoutes.AddRange(ExecuteMultiSourceMatching(needs, supplies));
+    
+    AddLog($"✅ {matchRoutes.Count} eşleştirme tamamlandı", "success");
     
     return Results.Ok(new
     {
